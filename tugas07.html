@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengelolaan Lowongan Kerja</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tambah Lowongan Kerja</h1>
+        <form id="jobForm">
+            <input type="text" id="judul" placeholder="Judul Pekerjaan" required />
+            <input type="text" id="deskripsi" placeholder="Deskripsi Pekerjaan" required />
+            <input type="date" id="tanggal" required />
+            <button type="submit">Tambah Lowongan</button>
+        </form>
+
+        <h2>Daftar Lowongan Kerja</h2>
+        <table id="jobTable">
+            <thead>
+                <tr>
+                    <th>Judul</th>
+                    <th>Deskripsi</th>
+                    <th>Tanggal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data lowongan akan ditampilkan di sini -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const apiUrl = 'https://script.google.com/macros/s/AKfycbwWkfMO9MVTy98jWfo21LWF595WZwnOmbvoLlP2xAluN_HGxTYsi-KlaajVlPOKblAIVA/exec'; // Ganti dengan URL API kamu
+
+        // Menangani pengiriman form
+        document.getElementById('jobForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const judul = document.getElementById('judul').value;
+            const deskripsi = document.getElementById('deskripsi').value;
+            const tanggal = document.getElementById('tanggal').value;
+
+            const data = {
+                action: 'add',
+                judul: judul,
+                deskripsi: deskripsi,
+                tanggal: tanggal
+            };
+
+            // Kirim data ke API
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(() => {
+                loadJobs(); // Refresh daftar lowongan
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        // Memuat daftar lowongan kerja
+        function loadJobs() {
+            const data = { action: 'read' };
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(jobs => {
+                const tbody = document.getElementById('jobTable').getElementsByTagName('tbody')[0];
+                tbody.innerHTML = ''; // Kosongkan tabel sebelum mengisi data baru
+
+                jobs.forEach(job => {
+                    const row = tbody.insertRow();
+                    row.insertCell(0).textContent = job.judul;
+                    row.insertCell(1).textContent = job.deskripsi;
+                    row.insertCell(2).textContent = job.tanggal;
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Memuat lowongan kerja saat halaman pertama kali dibuka
+        loadJobs();
+    </script>
+</body>
+</html>
